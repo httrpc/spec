@@ -1,0 +1,278 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HTTP RPC Protocol Schema Definition",
+  "description": "JSON Schema for validating HTTP RPC protocol schema files",
+  "type": "object",
+  "required": ["version", "types", "rpc"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version"
+    },
+    "auth": {
+      "type": "object",
+      "description": "Authentication scheme definitions",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["bearer"],
+                "description": "Bearer token authentication"
+              },
+              "in": {
+                "type": "string",
+                "enum": ["header"],
+                "default": "header",
+                "description": "Location of the token"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["type", "name"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["apiKey"],
+                "description": "API key authentication"
+              },
+              "in": {
+                "type": "string",
+                "enum": ["header", "query"],
+                "default": "header",
+                "description": "Location of the API key"
+              },
+              "name": {
+                "type": "string",
+                "description": "Name of the header or query parameter"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["basic"],
+                "description": "Basic authentication"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "types": {
+      "type": "object",
+      "description": "Type definitions",
+      "additionalProperties": {
+        "$ref": "#/definitions/typeDefinition"
+      }
+    },
+    "rpc": {
+      "type": "object",
+      "description": "RPC endpoint definitions",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "auth": {
+            "oneOf": [
+              { "$ref": "#/definitions/refType" },
+              { "$ref": "#/definitions/authDefinition" }
+            ],
+            "description": "Authentication for this namespace"
+          },
+          "actions": {
+            "type": "object",
+            "description": "Actions in this namespace",
+            "additionalProperties": {
+              "type": "object",
+              "required": ["type", "input", "output"],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["query", "mutation", "subscription"],
+                  "description": "Type of action"
+                },
+                "auth": {
+                  "oneOf": [
+                    { "$ref": "#/definitions/refType" },
+                    { "$ref": "#/definitions/authDefinition" }
+                  ],
+                  "description": "Authentication for this action (overrides namespace auth)"
+                },
+                "input": {
+                  "oneOf": [
+                    { "$ref": "#/definitions/refType" },
+                    { "$ref": "#/definitions/typeDefinition" }
+                  ],
+                  "description": "Input type definition"
+                },
+                "output": {
+                  "oneOf": [
+                    { "$ref": "#/definitions/refType" },
+                    { "$ref": "#/definitions/typeDefinition" }
+                  ],
+                  "description": "Output type definition"
+                }
+              }
+            }
+          }
+        },
+        "required": ["actions"]
+      }
+    }
+  },
+  "definitions": {
+    "refType": {
+      "type": "object",
+      "required": ["$ref"],
+      "properties": {
+        "$ref": {
+          "type": "string",
+          "description": "Reference to a defined type"
+        }
+      }
+    },
+    "typeDefinition": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["object", "array", "string", "number", "boolean", "null"],
+          "description": "Type of the data"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the type"
+        },
+        "properties": {
+          "type": "object",
+          "description": "Properties for object types (JSON Schema compatible)",
+          "additionalProperties": {
+            "$ref": "#/definitions/typeDefinition"
+          }
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Required properties for object types (JSON Schema compatible)"
+        },
+        "items": {
+          "oneOf": [
+            { "$ref": "#/definitions/refType" },
+            { "$ref": "#/definitions/typeDefinition" }
+          ],
+          "description": "Item type for array types"
+        },
+        "enum": {
+          "type": "array",
+          "description": "Enumeration of possible values"
+        },
+        "format": {
+          "type": "string",
+          "description": "Format of the data (e.g., date-time, email, etc.)"
+        },
+        "default": {
+          "description": "Default value"
+        },
+        "minimum": {
+          "type": "number",
+          "description": "Minimum value for numbers"
+        },
+        "maximum": {
+          "type": "number",
+          "description": "Maximum value for numbers"
+        },
+        "minLength": {
+          "type": "integer",
+          "description": "Minimum length for strings"
+        },
+        "maxLength": {
+          "type": "integer",
+          "description": "Maximum length for strings"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Regular expression pattern for strings"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "type": { "enum": ["object"] } }
+          },
+          "then": {
+            "required": ["properties"]
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "enum": ["array"] } }
+          },
+          "then": {
+            "required": ["items"]
+          }
+        }
+      ]
+    },
+    "authDefinition": {
+      "type": "object",
+      "oneOf": [
+        {
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["bearer"],
+              "description": "Bearer token authentication"
+            },
+            "in": {
+              "type": "string",
+              "enum": ["header"],
+              "default": "header",
+              "description": "Location of the token"
+            }
+          }
+        },
+        {
+          "required": ["type", "name"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["apiKey"],
+              "description": "API key authentication"
+            },
+            "in": {
+              "type": "string",
+              "enum": ["header", "query"],
+              "default": "header",
+              "description": "Location of the API key"
+            },
+            "name": {
+              "type": "string",
+              "description": "Name of the header or query parameter"
+            }
+          }
+        },
+        {
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["basic"],
+              "description": "Basic authentication"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

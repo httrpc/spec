@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HTTP RPC Protocol Response Schemas",
+  "description": "JSON Schema for validating HTTP RPC protocol responses",
+  "oneOf": [
+    { "$ref": "#/definitions/successResponse" },
+    { "$ref": "#/definitions/errorResponse" }
+  ],
+  "definitions": {
+    "successResponse": {
+      "type": "object",
+      "required": ["data"],
+      "properties": {
+        "data": {
+          "description": "Response data"
+        }
+      }
+    },
+    "errorResponse": {
+      "type": "object",
+      "required": ["error"],
+      "properties": {
+        "error": {
+          "type": "object",
+          "required": ["code", "message"],
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Error code"
+            },
+            "message": {
+              "type": "string",
+              "description": "Error message"
+            },
+            "data": {
+              "type": "object",
+              "description": "Additional error data"
+            }
+          }
+        }
+      }
+    }
+  }
+}

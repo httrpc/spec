@@ -1,0 +1,100 @@
+{
+  "$schema": "../schemas/httrpc-schema.json",
+  "version": "1",
+  "auth": {
+    "apiKey": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "X-API-Key"
+    },
+    "bearerToken": {
+      "type": "bearer",
+      "in": "header"
+    }
+  },
+  "types": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "age": { "type": "number" }
+      },
+      "required": ["id", "name", "email"]
+    },
+    "UserList": {
+      "type": "array",
+      "items": { "$ref": "#/types/User" }
+    },
+    "CreateUserInput": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "age": { "type": "number" }
+      },
+      "required": ["name", "email"]
+    },
+    "UpdateUserInput": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "age": { "type": "number" }
+      },
+      "required": ["id"]
+    }
+  },
+  "rpc": {
+    "users": {
+      "auth": { "$ref": "#/auth/bearerToken" },
+      "actions": {
+        "getUser": {
+          "type": "query",
+          "input": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" }
+            },
+            "required": ["id"]
+          },
+          "output": { "$ref": "#/types/User" }
+        },
+        "listUsers": {
+          "type": "query",
+          "input": {
+            "type": "object",
+            "properties": {
+              "limit": { "type": "number", "minimum": 1, "maximum": 100 },
+              "offset": { "type": "number", "minimum": 0 }
+            }
+          },
+          "output": { "$ref": "#/types/UserList" }
+        },
+        "createUser": {
+          "type": "mutation",
+          "input": { "$ref": "#/types/CreateUserInput" },
+          "output": { "$ref": "#/types/User" }
+        },
+        "updateUser": {
+          "type": "mutation",
+          "input": { "$ref": "#/types/UpdateUserInput" },
+          "output": { "$ref": "#/types/User" }
+        },
+        "userUpdates": {
+          "type": "subscription",
+          "input": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" }
+            },
+            "required": ["id"]
+          },
+          "output": { "$ref": "#/types/User" }
+        }
+      }
+    }
+  }
+}

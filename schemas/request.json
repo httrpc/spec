@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HTTP RPC Protocol Request Schemas",
+  "description": "JSON Schema for validating HTTP RPC protocol requests",
+  "oneOf": [
+    { "$ref": "#/definitions/queryRequest" },
+    { "$ref": "#/definitions/mutationRequest" }
+  ],
+  "definitions": {
+    "queryRequest": {
+      "type": "object",
+      "required": ["type", "args"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["positional", "named"],
+          "description": "Type of arguments"
+        },
+        "args": {
+          "oneOf": [
+            {
+              "type": "array",
+              "description": "Positional arguments"
+            },
+            {
+              "type": "object",
+              "description": "Named arguments"
+            }
+          ]
+        }
+      }
+    },
+    "mutationRequest": {
+      "type": "object",
+      "required": ["type", "args"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["positional", "named"],
+          "description": "Type of arguments"
+        },
+        "args": {
+          "oneOf": [
+            {
+              "type": "array",
+              "description": "Positional arguments"
+            },
+            {
+              "type": "object",
+              "description": "Named arguments"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
